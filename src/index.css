@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: rgb(241, 245, 249);
+  --border: rgb(100, 116, 139);
+  --bg-slate-800: rgb(30, 41, 59);
+}
+
+html {
+  font-size: 0.8rem;
+}
+
+@media (min-width: 640px) {
+  html {
+    font-size: 1rem;
+  }
+
+  .polygon:before, .polygon:after {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: 0;
+    transform: translate(-100%, 50%);
+    width: 6px;
+    height: 12px;
+    clip-path: polygon(0 50%, 100% 0, 100% 100%);
+  }
+  
+  .polygon:before {
+    background-color: var(--border);
+  }
+  
+  .polygon:after {
+    margin-left: 1px;
+    background-color: var(--bg);
+    background-image: linear-gradient(var(--bg), var(--bg));
+  }
+}
+
+.tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: var(--bg-slate-800) transparent transparent transparent;
+}
+
+div#tooltip-thumbsUp, div#tooltip-thumbsDown, div#tooltip-smile, div#tooltip-hooray, div#tooltip-unhappy, div#tooltip-heart {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s;
+}
+
+div#thumbsUp-reaction:hover div#tooltip-thumbsUp {
+  visibility: visible;
+  opacity: 1;
+}
+
+div#thumbsDown-reaction:hover div#tooltip-thumbsDown {
+  visibility: visible;
+  opacity: 1;
+}
+
+div#smile-reaction:hover div#tooltip-smile {
+  visibility: visible;
+  opacity: 1;
+}
+
+div#hooray-reaction:hover div#tooltip-hooray {
+  visibility: visible;
+  opacity: 1;
+}
+
+div#unhappy-reaction:hover div#tooltip-unhappy {
+  visibility: visible;
+  opacity: 1;
+}
+
+div#heart-reaction:hover div#tooltip-heart {
+  visibility: visible;
+  opacity: 1;
+}
