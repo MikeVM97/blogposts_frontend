@@ -26,9 +26,7 @@ export default function HomePage() {
 
   const navigate = useNavigate();
 
-  console.log(import.meta.env.PROD);
-
-  const URL = import.meta.env.PROD
+  const URL = import.meta.env.MODE === "production"
   ? "https://blogposts.up.railway.app/"
   : "http://localhost:3000";
 

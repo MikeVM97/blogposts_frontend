@@ -13,11 +13,11 @@ export default function CreatePost() {
   const [post, setPost] = useState(template);
   const navigate = useNavigate();
 
-  const URL = import.meta.env.PROD
+  const URL = import.meta.env.MODE === "production"
   ? "https://blogposts.up.railway.app/"
   : "http://localhost:3000";
 
-  const URL_FRONT = import.meta.env.PROD
+  const URL_FRONT = import.meta.env.MODE === "production"
   ? "https://blogposts-frontend.vercel.app/"
   : "http://localhost:5173";
 
