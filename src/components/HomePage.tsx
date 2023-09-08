@@ -27,7 +27,7 @@ export default function HomePage() {
   const navigate = useNavigate();
 
   const URL = import.meta.env.MODE === "production"
-  ? "https://blogposts.up.railway.app/"
+  ? "https://blogposts.up.railway.app"
   : "http://localhost:3000";
 
   useEffect(() => {

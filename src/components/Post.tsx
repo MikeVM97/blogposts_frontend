@@ -103,7 +103,7 @@ export default function Post({
   }, []);
 
   const URL = import.meta.env.MODE === "production"
-  ? "https://blogposts.up.railway.app/"
+  ? "https://blogposts.up.railway.app"
   : "http://localhost:3000";
 
   const detailsRef = useRef<HTMLDetailsElement | null>(null);

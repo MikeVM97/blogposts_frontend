@@ -15,7 +15,7 @@ export default function FormRegister() {
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
 
   const URL = import.meta.env.MODE === "production"
-  ? "https://blogposts.up.railway.app/"
+  ? "https://blogposts.up.railway.app"
   : "http://localhost:3000";
 
   function handleInput(e: React.ChangeEvent<HTMLInputElement>) {
