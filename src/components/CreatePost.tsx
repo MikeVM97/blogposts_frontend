@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAppSelector } from "../app/hook";
 import { type RootState } from "../app/store";
+import "dotenv/config";
 
 const template = {
   title: "",
@@ -13,6 +14,14 @@ export default function CreatePost() {
   const [post, setPost] = useState(template);
   const navigate = useNavigate();
 
+  const URL = process.env.NODE_ENV === "production" 
+  ? "https://blogposts.up.railway.app/"
+  : "http://localhost:3000";
+
+  const URL_FRONT = process.env.NODE_ENV === "production" 
+  ? "https://blogposts-frontend.vercel.app/"
+  : "http://localhost:5173";
+
   useEffect(() => {
     if (!user.isVerified) {
       navigate('/');
@@ -23,7 +32,7 @@ export default function CreatePost() {
     e.preventDefault();
 
     try {
-      const sendUser = await fetch(`http://localhost:3000/api/posts/createpost/${user.id}`, {
+      const sendUser = await fetch(`${URL}/api/posts/createpost/${user.id}`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -33,7 +42,7 @@ export default function CreatePost() {
       });
 
       if (sendUser.ok) {
-        window.open("http://localhost:5173", "_self");
+        window.open(URL_FRONT, "_self");
         console.log("Post creado con éxito");
       } else {
         console.log("Error al crear Post");

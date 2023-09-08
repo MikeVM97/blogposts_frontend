@@ -15,6 +15,7 @@ import {
   setPosts,
 } from "../features/userSlice";
 import { uploadImage } from "../app/firebase";
+import "dotenv/config";
 
 export default function HomePage() {
   const user = useAppSelector((state: RootState) => state.user);
@@ -26,8 +27,12 @@ export default function HomePage() {
 
   const navigate = useNavigate();
 
+  const URL = process.env.NODE_ENV === "production" 
+  ? "https://blogposts.up.railway.app/"
+  : "http://localhost:3000";
+
   useEffect(() => {
-    fetch('http://localhost:3000/api/auth/verify', {
+    fetch(`${URL}/api/auth/verify`, {
       method: 'GET',
       credentials: 'include',
     })
@@ -40,7 +45,7 @@ export default function HomePage() {
       }
     })
     .catch(err => console.error(err));
-  }, [dispatch]);
+  }, [dispatch, URL]);
 
   useEffect(() => {
     if (users) {
@@ -54,7 +59,7 @@ export default function HomePage() {
 
   async function handleLogout() {
     try {
-      const logoutRequest = await fetch('http://localhost:3000/api/auth/logout', {
+      const logoutRequest = await fetch(`${URL}/api/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -81,7 +86,7 @@ export default function HomePage() {
     const file: FileList | null = e.target.files;
     if (file !== null) {
       const urlImage: string = await uploadImage(file[0], user.username);
-      const sendData = await fetch(`http://localhost:3000/api/user/updateprofileimage/${user.id}`, {
+      const sendData = await fetch(`${URL}/api/user/updateprofileimage/${user.id}`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -117,7 +122,7 @@ export default function HomePage() {
 
   async function resendEmailVerification() {
     try {
-      const sendVerification = await fetch(`http://localhost:3000/api/user/resendemail/${user.id}`, {
+      const sendVerification = await fetch(`${URL}/api/user/resendemail/${user.id}`, {
         method: 'POST',
         credentials: 'include',
         headers: {

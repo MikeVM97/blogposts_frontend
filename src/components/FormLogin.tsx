@@ -12,6 +12,7 @@ import {
   setPosts,
   setUsername,
 } from "../features/userSlice";
+import "dotenv/config";
 
 const template = {
   email: "",
@@ -25,6 +26,10 @@ export default function FormLogin() {
 
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+
+  const URL = process.env.NODE_ENV === "production" 
+  ? "https://blogposts.up.railway.app/"
+  : "http://localhost:3000";
 
   function handleEmail(e: React.ChangeEvent<HTMLInputElement>) {
     setUserForm({
@@ -65,7 +70,7 @@ export default function FormLogin() {
   async function handleSubmit(e: React.ChangeEvent<HTMLFormElement>) {
     e.preventDefault();
     try {
-      const sendUser = await fetch('http://localhost:3000/api/auth/login', {
+      const sendUser = await fetch(`${URL}/api/auth/login`, {
         method: 'POST',
         credentials: 'include',
         headers: {

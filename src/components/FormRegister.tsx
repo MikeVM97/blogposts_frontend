@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import "dotenv/config";
 
 const template = {
   email: "",
@@ -13,6 +14,10 @@ export default function FormRegister() {
   const [userForm, setUserForm] = useState(template);
   const [showAlert, setShowAlert] = useState(false);
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
+
+  const URL = process.env.NODE_ENV === "production" 
+  ? "https://blogposts.up.railway.app/"
+  : "http://localhost:3000";
 
   function handleInput(e: React.ChangeEvent<HTMLInputElement>) {
     setUserForm({
@@ -53,7 +58,7 @@ export default function FormRegister() {
   async function handleSubmit(e: React.ChangeEvent<HTMLFormElement>) {
     e.preventDefault();
     try {
-      const sendUser = await fetch('http://localhost:3000/api/auth/register', {
+      const sendUser = await fetch(`${URL}/api/auth/register`, {
         method: 'POST',
         credentials: 'include',
         headers: {

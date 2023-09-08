@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, Dispatch, SetStateAction } from "react";
+import "dotenv/config";
 
 interface QuantityReactions {
   text: string;
@@ -100,6 +101,10 @@ export default function Post({
       document.removeEventListener('click', handleClickOutside);
     };
   }, []);
+
+  const URL = process.env.NODE_ENV === "production" 
+  ? "https://blogposts.up.railway.app/"
+  : "http://localhost:3000";
 
   const detailsRef = useRef<HTMLDetailsElement | null>(null);
 
@@ -222,7 +227,7 @@ export default function Post({
             postId: postState.postId,
           }
   
-          const sendNewReactions = await fetch(`http://localhost:3000/api/posts/updatereactions/${userPost.id}`, {
+          const sendNewReactions = await fetch(`${URL}/api/posts/updatereactions/${userPost.id}`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -246,8 +251,6 @@ export default function Post({
       console.log(error);
     }
   }
-
-  
 
   return (
     <section
