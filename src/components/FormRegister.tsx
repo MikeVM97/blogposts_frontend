@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import "dotenv/config";
 
 const template = {
   email: "",
@@ -15,7 +14,7 @@ export default function FormRegister() {
   const [showAlert, setShowAlert] = useState(false);
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
 
-  const URL = process.env.NODE_ENV === "production" 
+  const URL = import.meta.env.PROD
   ? "https://blogposts.up.railway.app/"
   : "http://localhost:3000";
 

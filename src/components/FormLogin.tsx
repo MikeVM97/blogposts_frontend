@@ -12,7 +12,6 @@ import {
   setPosts,
   setUsername,
 } from "../features/userSlice";
-import "dotenv/config";
 
 const template = {
   email: "",
@@ -27,7 +26,7 @@ export default function FormLogin() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const URL = process.env.NODE_ENV === "production" 
+  const URL = import.meta.env.PROD
   ? "https://blogposts.up.railway.app/"
   : "http://localhost:3000";
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, Dispatch, SetStateAction } from "react";
-import "dotenv/config";
+// import "dotenv/config";
 
 interface QuantityReactions {
   text: string;
@@ -102,7 +102,7 @@ export default function Post({
     };
   }, []);
 
-  const URL = process.env.NODE_ENV === "production" 
+  const URL = import.meta.env.PROD
   ? "https://blogposts.up.railway.app/"
   : "http://localhost:3000";
 

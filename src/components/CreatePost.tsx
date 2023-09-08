@@ -2,7 +2,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAppSelector } from "../app/hook";
 import { type RootState } from "../app/store";
-import "dotenv/config";
 
 const template = {
   title: "",
@@ -14,11 +13,11 @@ export default function CreatePost() {
   const [post, setPost] = useState(template);
   const navigate = useNavigate();
 
-  const URL = process.env.NODE_ENV === "production" 
+  const URL = import.meta.env.PROD
   ? "https://blogposts.up.railway.app/"
   : "http://localhost:3000";
 
-  const URL_FRONT = process.env.NODE_ENV === "production" 
+  const URL_FRONT = import.meta.env.PROD
   ? "https://blogposts-frontend.vercel.app/"
   : "http://localhost:5173";
 
