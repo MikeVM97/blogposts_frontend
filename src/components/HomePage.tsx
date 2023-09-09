@@ -26,6 +26,8 @@ export default function HomePage() {
 
   const navigate = useNavigate();
 
+  console.log(process.env.NODE_ENV);
+
   const URL = process.env.NODE_ENV === "production"
   ? "https://blogposts.up.railway.app"
   : "http://localhost:3000";
