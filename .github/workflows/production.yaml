@@ -7,7 +7,13 @@ on:
     branches:
       - main
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Building..."
+
   test:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -19,9 +25,5 @@ jobs:
           node-version: '14'
       - name: Install dependencies
         run: npm ci
-      - uses: actions/download-artifact@v2
-        with:
-          name: dist
-          path: dist
       - name: Test
         run: npm test
