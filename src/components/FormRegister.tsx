@@ -14,7 +14,7 @@ export default function FormRegister() {
   const [showAlert, setShowAlert] = useState(false);
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
 
-  const URL = import.meta.env.MODE === "production"
+  const URL = process.env.NODE_ENV === "production"
   ? "https://blogposts.up.railway.app"
   : "http://localhost:3000";
 

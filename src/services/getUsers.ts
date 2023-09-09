@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const URL = import.meta.env.MODE === "production"
+const URL = process.env.NODE_ENV === "production"
   ? "https://blogposts.up.railway.app"
   : "http://localhost:3000";
 

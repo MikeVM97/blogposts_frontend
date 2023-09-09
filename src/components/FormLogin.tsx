@@ -26,7 +26,7 @@ export default function FormLogin() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const URL = import.meta.env.MODE === "production"
+  const URL = process.env.NODE_ENV === "production"
   ? "https://blogposts.up.railway.app"
   : "http://localhost:3000";
 
