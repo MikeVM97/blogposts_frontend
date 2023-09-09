@@ -58,7 +58,7 @@ export default function Post({
   const [postState, setPostState] = useState<Post>(post);
   const [isOpen, setIsOpen] = useState(false);
   const [reactionsList, setReactionsList] = useState<ReactionsByUsers>(templateQuantityReactions);
-
+  
   useEffect(() => {
     const obj: ReactionsByUsers = {...templateQuantityReactions};
 
