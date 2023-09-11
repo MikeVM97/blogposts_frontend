@@ -26,8 +26,6 @@ export default function HomePage() {
 
   const navigate = useNavigate();
 
-  console.log(process.env.NODE_ENV);
-
   const URL = process.env.NODE_ENV === "production"
   ? "https://blogposts.up.railway.app"
   : "http://localhost:3000";
@@ -41,8 +39,10 @@ export default function HomePage() {
     .then(data => {
       if (!data.message) {
         dispatch(setLogged(true));
+        console.log("Logged in");
       } else {
         dispatch(setLogged(false));
+        console.log(data.message);
       }
     })
     .catch(err => console.error(err));
