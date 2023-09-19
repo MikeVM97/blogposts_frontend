@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, Dispatch, SetStateAction } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface QuantityReactions {
   text: string;
@@ -39,27 +39,25 @@ const templateQuantityReactions = {
     text: "",
     spare: 0,
   },
-}
+};
 
 export default function Post({
   post,
   users,
   user,
-  setText,
-  setIsHidden,
 }: {
   post: Post;
   users: User[];
   user: User;
-  setText: Dispatch<SetStateAction<string>>;
-  setIsHidden: Dispatch<SetStateAction<boolean>>;
 }) {
   const [postState, setPostState] = useState<Post>(post);
   const [isOpen, setIsOpen] = useState(false);
-  const [reactionsList, setReactionsList] = useState<ReactionsByUsers>(templateQuantityReactions);
-  
+  const [reactionsList, setReactionsList] = useState<ReactionsByUsers>(
+    templateQuantityReactions
+  );
+
   useEffect(() => {
-    const obj: ReactionsByUsers = {...templateQuantityReactions};
+    const obj: ReactionsByUsers = { ...templateQuantityReactions };
 
     for (const key in postState.reactions) {
       const arr = postState.reactions[key as keyof Reactions].reactedBy;
@@ -72,8 +70,8 @@ export default function Post({
         const copy = arr.slice(0, 7);
         str = copy.join(", ") + ",";
         sobrante = arr.length - copy.length;
-      }  
-      if (arr.length > 1 && arr.length < 8){
+      }
+      if (arr.length > 1 && arr.length < 8) {
         const copy = arr.slice(0, arr.length - 1);
         str = copy.join(", ") + " y " + arr[arr.length - 1];
       }
@@ -81,7 +79,7 @@ export default function Post({
       obj[key as keyof ReactionsByUsers] = {
         text: str,
         spare: sobrante,
-      }
+      };
     }
 
     setReactionsList(obj);
@@ -89,21 +87,25 @@ export default function Post({
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (detailsRef.current && !detailsRef.current.contains(e.target as Node)) {
+      if (
+        detailsRef.current &&
+        !detailsRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false);
       } else {
         setIsOpen(true);
       }
     }
-    document.addEventListener('click', handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
     return () => {
-      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener("click", handleClickOutside);
     };
   }, []);
 
-  const URL = process.env.NODE_ENV === "production"
-  ? "https://blogposts.up.railway.app"
-  : "http://localhost:3000";
+  const URL =
+    process.env.NODE_ENV === "production"
+      ? "https://blogposts.up.railway.app"
+      : "http://localhost:3000";
 
   const detailsRef = useRef<HTMLDetailsElement | null>(null);
 
@@ -175,75 +177,73 @@ export default function Post({
     e.stopPropagation();
     try {
       if (user.logged) {
-        if (!user.isVerified) {
-          setIsHidden(false);
-          setText("PARA PODER REACCIONAR A LOS POSTS");
-        } else {
-          const emoji = e.currentTarget.name as keyof Reactions;
+        const emoji = e.currentTarget.name as keyof Reactions;
 
-          let newReactions: Reactions = { ...postState.reactions };
-  
-          const userHasReacted = postState.reactions[emoji].reactedBy.some(
-            (x) => x === user.username
-          );
-  
-          if (userHasReacted) {
-            if (postState.reactions[emoji].count > 0) {
-              newReactions = {
-                ...postState.reactions,
-                [emoji]: {
-                  ...postState.reactions[emoji],
-                  count: postState.reactions[emoji].count - 1,
-                  reactedBy: [
-                    ...postState.reactions[emoji].reactedBy.filter(
-                      (x) => x !== user.username
-                    ),
-                  ],
-                },
-              };
-            }
-          } else {
+        let newReactions: Reactions = { ...postState.reactions };
+
+        const userHasReacted = postState.reactions[emoji].reactedBy.some(
+          (x) => x === user.username
+        );
+
+        if (userHasReacted) {
+          if (postState.reactions[emoji].count > 0) {
             newReactions = {
               ...postState.reactions,
               [emoji]: {
                 ...postState.reactions[emoji],
-                count: postState.reactions[emoji].count + 1,
+                count: postState.reactions[emoji].count - 1,
                 reactedBy: [
-                  ...postState.reactions[emoji].reactedBy,
-                  user.username,
+                  ...postState.reactions[emoji].reactedBy.filter(
+                    (x) => x !== user.username
+                  ),
                 ],
               },
             };
           }
-          
-          const userPost: User = users.find((user) => {
-            const flag = user.posts.some((x) => x.postId === postState.postId);
-            if (flag) return user;
-          }) as User;
-  
-          const data = {
-            newReactions,
-            postId: postState.postId,
-          }
-  
-          const sendNewReactions = await fetch(`${URL}/api/posts/updatereactions/${userPost.id}`, {
-            method: 'POST',
-            credentials: 'include',
+        } else {
+          newReactions = {
+            ...postState.reactions,
+            [emoji]: {
+              ...postState.reactions[emoji],
+              count: postState.reactions[emoji].count + 1,
+              reactedBy: [
+                ...postState.reactions[emoji].reactedBy,
+                user.username,
+              ],
+            },
+          };
+        }
+
+        const userPost: User = users.find((user) => {
+          const flag = user.posts.some((x) => x.postId === postState.postId);
+          if (flag) return user;
+        }) as User;
+
+        const data = {
+          newReactions,
+          postId: postState.postId,
+        };
+
+        const sendNewReactions = await fetch(
+          `${URL}/api/posts/updatereactions/${userPost.id}`,
+          {
+            method: "POST",
+            credentials: "include",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify(data),
-          });
-  
-          if (sendNewReactions.ok) {
-            const { newReactions } = await sendNewReactions.json();
-            setPostState({
-              ...postState,
-              reactions: newReactions,
-            });
-          } else {
-            console.log("Error al actualizar reacción.");
           }
+        );
+
+        if (sendNewReactions.ok) {
+          const { newReactions } = await sendNewReactions.json();
+          setPostState({
+            ...postState,
+            reactions: newReactions,
+          });
+        } else {
+          console.log("Error al actualizar reacción.");
         }
       }
     } catch (error) {
@@ -252,9 +252,7 @@ export default function Post({
   }
 
   return (
-    <section
-      className="border border-slate-500 rounded-md w-11/12 sm:w-120 relative polygon"
-    >
+    <section className="border border-slate-500 rounded-md w-11/12 sm:w-120 relative polygon">
       <div className="text-xl bg-slate-100 p-2 flex justify-between items-center rounded-t-md border-b border-slate-500">
         <span className="font-bold">{post.author}</span>
         <span className="">comentado en {parseDate(post.date)}</span>
@@ -263,7 +261,11 @@ export default function Post({
         <p className="text-2xl font-sans font-semibold">{post.title}</p>
         <p className="text-base font-serif font-medium">{post.body}</p>
         <div className="flex items-center gap-x-6">
-          <details className="w-fit relative" open={isOpen ? false : undefined} ref={detailsRef}>
+          <details
+            className="w-fit relative"
+            open={isOpen ? false : undefined}
+            ref={detailsRef}
+          >
             <summary className="list-none">
               <img
                 src="/emoji.svg"
@@ -274,13 +276,13 @@ export default function Post({
               />
             </summary>
             <div className="flex justify-between items-center gap-x-4 p-2 absolute -top-14 left-0 text-base bg-white py-0.5 px-1.5 border border-slate-500 rounded-md">
-            <button
-                  className="cursor-pointer py-[2px] px-[5px] hover:bg-slate-200 rounded-md"
-                  onClick={handleClickReactionOne}
-                  name="thumbsUp"
-                >
-                  👍
-                </button>
+              <button
+                className="cursor-pointer py-[2px] px-[5px] hover:bg-slate-200 rounded-md"
+                onClick={handleClickReactionOne}
+                name="thumbsUp"
+              >
+                👍
+              </button>
               <button
                 className="cursor-pointer py-[2px] px-[5px] hover:bg-slate-200 rounded-md"
                 onClick={handleClickReactionOne}
@@ -335,19 +337,23 @@ export default function Post({
                 onClick={handleClickReactionOne}
                 name="thumbsUp"
                 ref={thumbsUpRef}
-                
               >
                 👍{thumbsUp.count}
               </button>
-              <div className={`tooltip absolute w-48 -top-2 left-0 sm:left-2/4 -translate-y-full sm:-translate-x-2/4 sm:after:-ml-[5px] after:-ml-[60px] p-2 rounded-xl text-xs text-center text-white bg-slate-800 ${thumbsUp.count > 0 ? 'block' : 'hidden'}`}
+              <div
+                className={`tooltip absolute w-48 -top-2 left-0 sm:left-2/4 -translate-y-full sm:-translate-x-2/4 sm:after:-ml-[5px] after:-ml-[60px] p-2 rounded-xl text-xs text-center text-white bg-slate-800 ${
+                  thumbsUp.count > 0 ? "block" : "hidden"
+                }`}
                 data-tip="thumbsUp"
                 id={`tooltip-thumbsUp`}
               >
+                <p>{reactionsList.thumbsUp.text}</p>
                 <p>
-                  { reactionsList.thumbsUp.text }
-                </p>
-                <p>
-                  { thumbsUp.count === 1 ? "ha reaccionado con emoji de 'Me gusta' a este post" : thumbsUp.count > 1 && thumbsUp.count < 8 ? "han reaccionado con emoji de 'Me gusta' a este post" : `y ${reactionsList.thumbsUp.spare} más han reaccionado con emoji de 'Me gusta' a este post` }
+                  {thumbsUp.count === 1
+                    ? "ha reaccionado con emoji de 'Me gusta' a este post"
+                    : thumbsUp.count > 1 && thumbsUp.count < 8
+                    ? "han reaccionado con emoji de 'Me gusta' a este post"
+                    : `y ${reactionsList.thumbsUp.spare} más han reaccionado con emoji de 'Me gusta' a este post`}
                 </p>
               </div>
             </div>
@@ -366,15 +372,20 @@ export default function Post({
               >
                 👎{thumbsDown.count}
               </button>
-              <div className={`tooltip absolute w-48 -top-2 left-2/4 -translate-y-full -translate-x-2/4 p-2 rounded-xl text-xs text-center text-white bg-slate-800 ${thumbsDown.count > 0 ? 'block' : 'hidden'}`}
+              <div
+                className={`tooltip absolute w-48 -top-2 left-2/4 -translate-y-full -translate-x-2/4 p-2 rounded-xl text-xs text-center text-white bg-slate-800 ${
+                  thumbsDown.count > 0 ? "block" : "hidden"
+                }`}
                 data-tip="thumbsDown"
                 id={`tooltip-thumbsDown`}
               >
+                <p>{reactionsList.thumbsDown.text}</p>
                 <p>
-                  { reactionsList.thumbsDown.text }
-                </p>
-                <p>
-                  { thumbsDown.count === 1 ? "ha reaccionado con emoji de 'No me gusta' a este post" : thumbsDown.count > 1 && thumbsDown.count < 8 ? "han reaccionado con emoji de 'No me gusta' a este post" : `y ${reactionsList.thumbsDown.spare} más han reaccionado con emoji de 'No me gusta' a este post` }
+                  {thumbsDown.count === 1
+                    ? "ha reaccionado con emoji de 'No me gusta' a este post"
+                    : thumbsDown.count > 1 && thumbsDown.count < 8
+                    ? "han reaccionado con emoji de 'No me gusta' a este post"
+                    : `y ${reactionsList.thumbsDown.spare} más han reaccionado con emoji de 'No me gusta' a este post`}
                 </p>
               </div>
             </div>
@@ -393,15 +404,20 @@ export default function Post({
               >
                 😄{smile.count}
               </button>
-              <div className={`tooltip absolute w-48 -top-2 left-2/4 -translate-y-full -translate-x-2/4 p-2 rounded-xl text-xs text-center text-white bg-slate-800 ${smile.count > 0 ? 'block' : 'hidden'}`}
+              <div
+                className={`tooltip absolute w-48 -top-2 left-2/4 -translate-y-full -translate-x-2/4 p-2 rounded-xl text-xs text-center text-white bg-slate-800 ${
+                  smile.count > 0 ? "block" : "hidden"
+                }`}
                 data-tip="smile"
                 id={`tooltip-smile`}
               >
+                <p>{reactionsList.smile.text}</p>
                 <p>
-                  { reactionsList.smile.text }
-                </p>
-                <p>
-                  { smile.count === 1 ? "ha reaccionado con emoji de 'Me divierte' a este post" : smile.count > 1 && smile.count < 8 ? "han reaccionado con emoji de 'Me divierte' a este post" : `y ${reactionsList.smile.spare} más han reaccionado con emoji de 'Me divierte' a este post` }
+                  {smile.count === 1
+                    ? "ha reaccionado con emoji de 'Me divierte' a este post"
+                    : smile.count > 1 && smile.count < 8
+                    ? "han reaccionado con emoji de 'Me divierte' a este post"
+                    : `y ${reactionsList.smile.spare} más han reaccionado con emoji de 'Me divierte' a este post`}
                 </p>
               </div>
             </div>
@@ -420,15 +436,20 @@ export default function Post({
               >
                 🎉{hooray.count}
               </button>
-              <div className={`tooltip absolute w-48 -top-2 left-2/4 -translate-y-full -translate-x-2/4 p-2 rounded-xl text-xs text-center text-white bg-slate-800 ${hooray.count > 0 ? 'block' : 'hidden'}`}
+              <div
+                className={`tooltip absolute w-48 -top-2 left-2/4 -translate-y-full -translate-x-2/4 p-2 rounded-xl text-xs text-center text-white bg-slate-800 ${
+                  hooray.count > 0 ? "block" : "hidden"
+                }`}
                 data-tip="hooray"
                 id={`tooltip-hooray`}
               >
+                <p>{reactionsList.hooray.text}</p>
                 <p>
-                  { reactionsList.hooray.text }
-                </p>
-                <p>
-                  { hooray.count === 1 ? "ha reaccionado con emoji de 'Felicidades' a este post" : hooray.count > 1 && hooray.count < 8 ? "han reaccionado con emoji de 'Felicidades' a este post" : `y ${reactionsList.hooray.spare} más han reaccionado con emoji de 'Felicidades' a este post` }
+                  {hooray.count === 1
+                    ? "ha reaccionado con emoji de 'Felicidades' a este post"
+                    : hooray.count > 1 && hooray.count < 8
+                    ? "han reaccionado con emoji de 'Felicidades' a este post"
+                    : `y ${reactionsList.hooray.spare} más han reaccionado con emoji de 'Felicidades' a este post`}
                 </p>
               </div>
             </div>
@@ -447,15 +468,20 @@ export default function Post({
               >
                 😕{unhappy.count}
               </button>
-              <div className={`tooltip absolute w-48 -top-2 left-2/4 -translate-y-full -translate-x-2/4 p-2 rounded-xl text-xs text-center text-white bg-slate-800 ${unhappy.count > 0 ? 'block' : 'hidden'}`}
+              <div
+                className={`tooltip absolute w-48 -top-2 left-2/4 -translate-y-full -translate-x-2/4 p-2 rounded-xl text-xs text-center text-white bg-slate-800 ${
+                  unhappy.count > 0 ? "block" : "hidden"
+                }`}
                 data-tip="unhappy"
                 id={`tooltip-unhappy`}
               >
+                <p>{reactionsList.unhappy.text}</p>
                 <p>
-                  { reactionsList.unhappy.text }
-                </p>
-                <p>
-                  { unhappy.count === 1 ? "ha reaccionado con emoji de 'Me entristece' a este post" : unhappy.count > 1 && unhappy.count < 8 ? "han reaccionado con emoji de 'Me entristece' a este post" : `y ${reactionsList.unhappy.spare} más han reaccionado con emoji de 'Me entristece' a este post` }
+                  {unhappy.count === 1
+                    ? "ha reaccionado con emoji de 'Me entristece' a este post"
+                    : unhappy.count > 1 && unhappy.count < 8
+                    ? "han reaccionado con emoji de 'Me entristece' a este post"
+                    : `y ${reactionsList.unhappy.spare} más han reaccionado con emoji de 'Me entristece' a este post`}
                 </p>
               </div>
             </div>
@@ -474,15 +500,20 @@ export default function Post({
               >
                 💖{heart.count}
               </button>
-              <div className={`tooltip absolute w-48 -top-2 right-0 sm:left-2/4 -translate-y-full sm:-translate-x-2/4 sm:after:-ml-[5px] after:ml-[50px] p-2 rounded-xl text-xs text-center text-white bg-slate-800 ${heart.count > 0 ? 'block' : 'hidden'}`}
+              <div
+                className={`tooltip absolute w-48 -top-2 right-0 sm:left-2/4 -translate-y-full sm:-translate-x-2/4 sm:after:-ml-[5px] after:ml-[50px] p-2 rounded-xl text-xs text-center text-white bg-slate-800 ${
+                  heart.count > 0 ? "block" : "hidden"
+                }`}
                 data-tip="heart"
                 id={`tooltip-heart`}
               >
+                <p>{reactionsList.heart.text}</p>
                 <p>
-                  { reactionsList.heart.text }
-                </p>
-                <p>
-                  { heart.count === 1 ? "ha reaccionado con emoji de 'Me encanta' a este post" : heart.count > 1 && heart.count < 8 ? "han reaccionado con emoji de 'Me encanta' a este post" : `y ${reactionsList.heart.spare} más han reaccionado con emoji de 'Me encanta' a este post` }
+                  {heart.count === 1
+                    ? "ha reaccionado con emoji de 'Me encanta' a este post"
+                    : heart.count > 1 && heart.count < 8
+                    ? "han reaccionado con emoji de 'Me encanta' a este post"
+                    : `y ${reactionsList.heart.spare} más han reaccionado con emoji de 'Me encanta' a este post`}
                 </p>
               </div>
             </div>
@@ -491,11 +522,10 @@ export default function Post({
       </div>
       <div className="sm:block hidden absolute top-[5px] -left-[50px]">
         <div
-          style={profileStyle} 
-          className={`bg-center bg-cover w-[30px] h-[30px] rounded-full`} 
+          style={profileStyle}
+          className={`bg-center bg-cover w-[30px] h-[30px] rounded-full`}
         ></div>
       </div>
-      
     </section>
   );
 }
