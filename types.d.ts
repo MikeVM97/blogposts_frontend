@@ -33,3 +33,11 @@ interface User {
   posts: Post[] | [];
   username: string;
 }
+
+interface UserForm {
+  email: string;
+  gender: string;
+  password: string;
+  password2: string;
+  username: string;
+}
