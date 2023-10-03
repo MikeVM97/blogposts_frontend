@@ -1,18 +1,21 @@
+import { Dispatch, SetStateAction } from "react";
 import Post from "./Post";
 
 export default function Posts({
-  posts,
+  postsOrdered,
   users,
   user,
+  setPostsOrdered,
 }: {
-  posts: Post[];
+  postsOrdered: Post[];
   users: User[];
   user: User;
+  setPostsOrdered: Dispatch<SetStateAction<Post[]>>;
 }) {
   return (
     <main className="flex flex-col justify-center items-center gap-y-8 py-8 bg-white">
-      {posts.map((post: Post) => {
-        return <Post post={post} users={users} user={user} key={post.postId} />;
+      {postsOrdered.map((post: Post) => {
+        return <Post post={post} users={users} user={user} key={post.postId} postsOrdered={postsOrdered} setPostsOrdered={setPostsOrdered} />;
       })}
     </main>
   );

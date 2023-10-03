@@ -14,7 +14,6 @@ import {
   setUsername,
   setPosts,
 } from "../features/userSlice";
-import { uploadImage } from "../app/firebase";
 
 export default function HomePage() {
   const user = useAppSelector((state: RootState) => state.user);
@@ -32,17 +31,38 @@ export default function HomePage() {
       : "http://localhost:3000";
 
   useEffect(() => {
-    fetch(`${URL}/users`)
-    .then((res) => res.json())
-    .then((data) => {
-      setUsers(data);
-      const posts = data
-      .map((user: User) => user.posts)
-      .flat()
-      .sort((a: Post, b: Post) => Number(b.postId) - Number(a.postId));
-      setPostsOrdered(posts);
-    })
-    .catch((err) => console.error(err));
+    const getUsers = async() => {
+      try {
+        const request = await fetch(`${URL}/users`, {
+          method: "POST"
+        });
+        if (request.ok) {
+          const data = await request.json();
+          setUsers(data);
+          const posts = data
+          .map((user: User) => user.posts)
+          .flat()
+          .sort((a: Post, b: Post) => {
+            // b.date => 'comentado en 15 Julio, 2023'
+            const index1 = a.date.indexOf('en ') + 3;
+            const post1 = a.date.substring(index1);
+
+            const index2 = b.date.indexOf('en ') + 3;
+            const post2 = b.date.substring(index2);
+
+            return Number(strToDate(post2)) - Number(strToDate(post1));
+          });
+          setPostsOrdered(posts);
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          console.log(error);
+          return error;
+        }
+      }
+    }
+    
+    getUsers();
   }, [URL]);
 
   async function handleLogout() {
@@ -72,39 +92,6 @@ export default function HomePage() {
     }
   }
 
-  async function handleImage(e: React.ChangeEvent<HTMLInputElement>) {
-    const file: FileList | null = e.target.files;
-    if (file !== null) {
-      const urlImage: string = await uploadImage(file[0], user.username);
-      const sendData = await fetch(
-        `${URL}/api/user/updateprofileimage/${user.id}`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ newPhotoUrl: urlImage }),
-        }
-      );
-      if (sendData.ok) {
-        const { newPhotoUrl, newPosts } = await sendData.json();
-        if (newPhotoUrl) {
-          dispatch(setPhotoUrl(newPhotoUrl));
-        }
-        if (newPosts) {
-          dispatch(setPosts(newPosts));
-          navigate(0);
-        }
-        console.log("Foto de perfil actualizado correctamente.");
-      } else {
-        console.log("Error al actualizar foto de perfil.");
-      }
-    } else {
-      console.log("No file to upload");
-    }
-  }
-
   function goToCreatePost() {
     if (user.isVerified) {
       navigate("/post");
@@ -131,18 +118,11 @@ export default function HomePage() {
   if (user.logged) {
     content = (
       <header className="flex justify-between items-center p-4 border-b-2 border-blue-700">
-        <label htmlFor="input-file" className="cursor-pointer">
-          <div
-            style={profileStyle}
-            className={`bg-center bg-cover w-14 h-14 rounded-full`}
-          ></div>
-          <input
-            type="file"
-            id="input-file"
-            className="hidden"
-            onChange={handleImage}
-          />
-        </label>
+        <div
+          style={profileStyle}
+          onClick={() => navigate('/profile')}
+          className={`bg-center bg-cover w-14 h-14 rounded-full cursor-pointer`}
+        ></div>
         <button
           className="border border-zinc-700 py-1 px-2 rounded-lg bg-white hover:text-white hover:bg-zinc-700 hover:border-white text-xl"
           onClick={goToCreatePost}
@@ -189,7 +169,7 @@ export default function HomePage() {
   }
 
   if (users) {
-    posts = <Posts posts={postsOrdered} users={users} user={user} />;
+    posts = <Posts postsOrdered={postsOrdered} users={users} user={user} setPostsOrdered={setPostsOrdered} />;
   }
 
   return (
@@ -207,4 +187,28 @@ export default function HomePage() {
       </div>
     </div>
   );
+}
+
+
+function strToDate(str: string) {
+  const array = str.split(' ');
+  const day: number = parseInt(array[0], 10);
+  const month = array[1].slice(0, array[1].length - 1);
+  const year: number = parseInt(array[2], 10);
+  const months: Months = {
+    Enero: 0,
+    Febrero: 1,
+    Marzo: 2,
+    Abril: 3,
+    Mayo: 4,
+    Junio: 5,
+    Julio: 6,
+    Agosto: 7,
+    Septiembre: 8,
+    Octubre: 9,
+    Noviembre: 10,
+    Diciembre: 11,
+  };
+  const date = new Date(year, months[month as keyof Months], day);
+  return date;
 }

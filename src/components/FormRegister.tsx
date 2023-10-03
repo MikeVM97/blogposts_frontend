@@ -141,6 +141,7 @@ export default function FormRegister() {
         setShowAlert(true);
       }
     } catch (error) {
+      setLoader(false);
       const errorMessages = ["Oops! Un error ha ocurrido."];
       setErrorMessages(errorMessages);
       setShowAlert(true);

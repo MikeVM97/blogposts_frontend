@@ -1,4 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Dispatch, SetStateAction } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAppDispatch } from "../app/hook";
+import { setPosts } from "../features/userSlice";
 
 interface QuantityReactions {
   text: string;
@@ -45,16 +48,26 @@ export default function Post({
   post,
   users,
   user,
+  postsOrdered,
+  setPostsOrdered,
 }: {
   post: Post;
   users: User[];
   user: User;
+  postsOrdered: Post[];
+  setPostsOrdered: Dispatch<SetStateAction<Post[]>>
 }) {
   const [postState, setPostState] = useState<Post>(post);
   const [isOpen, setIsOpen] = useState(false);
   const [reactionsList, setReactionsList] = useState<ReactionsByUsers>(
     templateQuantityReactions
   );
+  const [postOptionsActive, setPostOptionsActive] = useState(false);
+  const [deleting, setDeleting] = useState('Eliminando...');
+
+  const navigate = useNavigate();
+
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const obj: ReactionsByUsers = { ...templateQuantityReactions };
@@ -88,6 +101,12 @@ export default function Post({
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (
+        optionsRef.current &&
+        !optionsRef.current.contains(e.target as Node)
+      ) {
+        setPostOptionsActive(false);
+      }
+      if (
         detailsRef.current &&
         !detailsRef.current.contains(e.target as Node)
       ) {
@@ -95,6 +114,7 @@ export default function Post({
       } else {
         setIsOpen(true);
       }
+      
     }
     document.addEventListener("click", handleClickOutside);
     return () => {
@@ -108,6 +128,9 @@ export default function Post({
       : "http://localhost:3000";
 
   const detailsRef = useRef<HTMLDetailsElement | null>(null);
+  const optionsRef = useRef<HTMLButtonElement | null>(null);
+
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
 
   const thumbsUpRef = useRef<HTMLButtonElement | null>(null);
   const thumbsDownRef = useRef<HTMLButtonElement | null>(null);
@@ -251,15 +274,80 @@ export default function Post({
     }
   }
 
+  async function deletePost() {
+    try {
+      dialogRef.current?.showModal();
+      const sendDelete = await fetch(`${URL}/api/posts/deletepost/${user.id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ postId: post.postId }),
+      });
+
+      if (sendDelete.ok) {
+        setDeleting('Post eliminado');
+        const { newPosts } = await sendDelete.json();
+        dispatch(setPosts(newPosts));
+      } else {
+        const { message } = await sendDelete.json();
+        setDeleting(message[0]);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log(error);
+        throw new Error(error.message);
+      }
+    }
+  }
+
+  const haveOptions = user.username === post.author;
+
   return (
+    <>
     <section className="border border-slate-500 rounded-md w-11/12 sm:w-120 relative polygon">
       <div className="text-xl bg-slate-100 p-2 flex justify-between items-center rounded-t-md border-b border-slate-500">
         <span className="font-bold">{post.author}</span>
-        <span className="">comentado en {parseDate(post.date)}</span>
+        {
+          user.logged && haveOptions ?
+          <div className="flex justify-center items-center gap-x-2 relative">
+            <span className="">{post.date}</span>
+            <button 
+              className="w-[15px] cursor-pointer flex justify-center"
+              onClick={() => setPostOptionsActive(!postOptionsActive)}
+              ref={optionsRef}
+            >
+              <img className="w-2/4" src="/ellipsis-vertical-solid.svg" alt="Botón menú para modificar post" />
+            </button>
+            <div 
+              className={`${postOptionsActive ? 'block' : 'hidden'} absolute top-0 right-6 p-2 text-base flex flex-col gap-y-3 bg-white border-2 border-orange-900 rounded-md`}
+            >
+              <div className="cursor-pointer flex justify-center items-center gap-x-2 p-1 rounded-md border border-teal-500 bg-teal-200 hover:bg-teal-400">
+                <img src="/pen-to-square-regular.svg" width={20} alt="edit post button" />
+                <button 
+                  onClick={() => navigate(`/edit?userId=${user.id}&postId=${post.postId}`)}
+                >Editar</button>
+              </div>
+              <div className="cursor-pointer flex justify-center items-center gap-x-2 p-1 rounded-md border border-red-500 bg-red-300 hover:bg-red-400">
+                <img src="/trash-solid.svg" width={20} alt="delete post button" />
+                <button
+                  onClick={deletePost}
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </div> :
+          <span className="">{post.date}</span>
+        }
       </div>
       <div className="font-mono text-xl text-cyan-950 p-2 rounded-b-md flex flex-col gap-y-6">
         <p className="text-2xl font-sans font-semibold">{post.title}</p>
-        <p className="text-base font-serif font-medium">{post.body}</p>
+        <div
+          className="text-base font-serif font-medium break-words"
+          dangerouslySetInnerHTML={{__html: post.body}}
+        ></div>
         <div className="flex items-center gap-x-6">
           <details
             className="w-fit relative"
@@ -527,33 +615,25 @@ export default function Post({
         ></div>
       </div>
     </section>
+    <dialog
+      ref={dialogRef}
+      className="fixed m-0 top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%] w-[45vw] h-[25vh] bg-red-200"  
+    >
+      <div className="w-full h-full flex flex-col justify-center items-center border-2 border-red-500 rounded-md">
+        <p className={`${deleting === 'Eliminando...' ? 'text-red-500' : 'text-black'} font-semibold text-3xl`}>{deleting}</p>
+        <button
+          onClick={() => {
+            dialogRef.current?.close();
+            setDeleting('Eliminando...');
+            const x = postsOrdered.filter((postOrdered) => postOrdered.postId !== post.postId);
+            setPostsOrdered(x);
+          }}
+          className={`absolute top-2 right-2 text-xs bg-neutral-700 hover:bg-neutral-900 rounded-full w-7 h-7 ${deleting === 'Eliminando...' ? 'hidden' : 'block'}`}
+        >
+          ✖
+        </button>
+      </div>
+    </dialog>
+    </>
   );
-}
-
-function parseDate(date: string) {
-  // date: "18-08-2023"
-  const months: string[] = [
-    "Enero",
-    "Febrero",
-    "Marzo",
-    "Abril",
-    "Mayo",
-    "Junio",
-    "Julio",
-    "Agosto",
-    "Septiembre",
-    "Octubre",
-    "Noviembre",
-    "Diciembre",
-  ];
-
-  const day: string = date.slice(0, 2); // "18"
-  let month: string = date.slice(3, 5); // "08"
-  const year: string = date.slice(6); // "2023"
-
-  const index: number = parseInt(month) - 1;
-
-  month = months[index]; // Agosto
-
-  return `${day} ${month}, ${year}`; // "18 Agosto, 2023"
 }
