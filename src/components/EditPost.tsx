@@ -3,7 +3,20 @@ import { useAppSelector, useAppDispatch } from "../app/hook";
 import { RootState } from "../app/store";
 import { setPosts } from "../features/userSlice";
 import { useState, useEffect } from "react";
-import { Editor } from "@tinymce/tinymce-react";
+import ReactQuill, { Quill } from 'react-quill';
+import quillEmoji from "quill-emoji";
+import 'react-quill/dist/quill.snow.css';
+import "quill-emoji/dist/quill-emoji.css";
+
+Quill.register(
+  {
+    "formats/emoji": quillEmoji.EmojiBlot,
+    "modules/emoji-toolbar": quillEmoji.ToolbarEmoji,
+    "modules/emoji-textarea": quillEmoji.TextAreaEmoji,
+    "modules/emoji-shortname": quillEmoji.ShortNameEmoji,
+  },
+  true,
+);
 
 const template = {
   title: '',
@@ -22,6 +35,44 @@ export default function EditPost() {
   const [showAlert, setShowAlert] = useState(false);
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
   const [statusMessage, setStatusMessage] = useState('failed');
+  const [newPosts, setNewPosts] = useState([]);
+
+  const formats = ['font', 'header', 'bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block', 'color', 'background', 'list', 'indent', 'align', 'link', 'image', 'clean', 'emoji'];
+  const modules = {
+    toolbar: [
+      ['bold', 'italic', 'underline', 'strike'],
+      ['blockquote', 'code-block'],
+    
+      [{ 'header': 1 }, { 'header': 2 }],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'script': 'sub'}, { 'script': 'super' }],
+      [{ 'indent': '-1'}, { 'indent': '+1' }],
+    
+      [{ 'size': ['small', false, 'large', 'huge'] }],
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+    
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'font': [] }],
+      [{ 'align': [] }],
+    
+      ['clean'],
+    ],
+    "emoji-textarea": true,
+    "emoji-shortname": true,
+  };
+
+  useEffect(() => {
+    const emojiContainer = document.querySelector('#textarea-emoji') as HTMLElement;
+    function handleClickOutside(e: MouseEvent) {
+      if (emojiContainer && !emojiContainer?.contains(e.target as Node)) {
+        emojiContainer.style.display = 'none';
+      }
+    }
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
 
   const user = useAppSelector((state: RootState) => state.user);
   const dispatch = useAppDispatch();
@@ -32,7 +83,7 @@ export default function EditPost() {
   const queryParams = new URLSearchParams(location.search);
   const postId = queryParams.get('postId');
 
-  const postFound: Post = user.posts.find((post) => post.postId === postId) as Post;
+  const postFound: Post = user.posts.find((post: Post) => post.postId === postId) as Post;
   useEffect(() => {
     setPost({
       title: postFound.title,
@@ -42,10 +93,8 @@ export default function EditPost() {
   }, [postFound.body, postFound.title]);
 
   const URL = process.env.NODE_ENV === "production"
-  ? "https://blogposts.up.railway.app"
+  ? import.meta.env.VITE_HOST
   : "http://localhost:3000";
-
-  const API_KEY = 'lxcvuftzjvdipm1w9uu9869kf6cajlcegxgd9y5z1b4ppnnx';
 
   const Alert_Component = (
     <div
@@ -71,6 +120,7 @@ export default function EditPost() {
           onClick={() => {
             setShowAlert(false);
             if (statusMessage !== 'failed') {
+              dispatch(setPosts(newPosts));
               navigate('/');
             }
           }}
@@ -103,7 +153,7 @@ export default function EditPost() {
         setStatusMessage('success');
         setShowAlert(true);
         const { newPosts } = await sendForm.json();
-        dispatch(setPosts(newPosts));
+        setNewPosts(newPosts);
       } else {
         setLoader(false);
         setStatusMessage('failed');
@@ -146,22 +196,7 @@ export default function EditPost() {
         <label className="opacity-50" htmlFor="post-body">
           Mensaje:
         </label>
-        <Editor
-          apiKey={API_KEY}
-          onEditorChange={(newValue) => {
-            setPost({
-              ...post,
-              body: newValue,
-            });
-          }}
-          initialValue={value}
-          value={post.body}
-          init={{
-            plugins: 'anchor autolink charmap codesample emoticons link lists searchreplace table visualblocks wordcount checklist casechange export formatpainter pageembed permanentpen footnotes advtemplate advtable advcode editimage tableofcontents mergetags powerpaste tinymcespellchecker autocorrect a11ychecker typography inlinecss',
-            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | align lineheight | tinycomments | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
-            language: 'es',
-          }}
-        />
+        <ReactQuill theme="snow" value={value} formats={formats} onChange={setValue} modules={modules} />
         <button
           className={`border-2 rounded-md w-1/2 m-auto p-1 text-2xl ${!newChanges ? 'border-zinc-500 bg-zinc-300' : 'border-green-500 bg-green-300 hover:bg-green-500'}`}
           type="submit"

@@ -14,9 +14,7 @@ const initialState: User = {
     {
       title: "Post N° 1",
       body: "Some Post... 1",
-      author: "Author",
       date: "09-06-2023",
-      photoUrl: "blank",
       postId: "0",
       reactions: {
         thumbsUp: {

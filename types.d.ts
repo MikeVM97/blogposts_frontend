@@ -15,9 +15,7 @@ interface Reactions {
 interface Post {
   title: string;
   body: string;
-  author: string;
   date: string;
-  photoUrl: string;
   postId: string;
   reactions: Reactions;
 }
@@ -40,19 +38,4 @@ interface UserForm {
   password: string;
   password2: string;
   username: string;
-}
-
-interface Months {
-  Enero: number;
-  Febrero: number;
-  Marzo: number;
-  Abril: number;
-  Mayo: number;
-  Junio: number;
-  Julio: number;
-  Agosto: number;
-  Septiembre: number;
-  Octubre: number;
-  Noviembre: number;
-  Diciembre: number;
 }

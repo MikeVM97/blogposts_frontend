@@ -38,9 +38,9 @@ export default function FormRegister() {
   const [loader, setLoader] = useState(false);
 
   const URL =
-    process.env.NODE_ENV === "production"
-      ? "https://blogposts.up.railway.app"
-      : "http://localhost:3000";
+  process.env.NODE_ENV === "production"
+  ? import.meta.env.VITE_HOST
+  : "http://localhost:3000";
 
   function handleInput(e: React.ChangeEvent<HTMLInputElement>) {
     const key = e.target.name;

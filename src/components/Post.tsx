@@ -46,13 +46,11 @@ const templateQuantityReactions = {
 
 export default function Post({
   post,
-  users,
   user,
   postsOrdered,
   setPostsOrdered,
 }: {
   post: Post;
-  users: User[];
   user: User;
   postsOrdered: Post[];
   setPostsOrdered: Dispatch<SetStateAction<Post[]>>
@@ -64,6 +62,9 @@ export default function Post({
   );
   const [postOptionsActive, setPostOptionsActive] = useState(false);
   const [deleting, setDeleting] = useState('Eliminando...');
+  const [profileImage, setProfileImage] = useState('');
+  const [userID, setUserID] = useState('');
+  const [author, setAuthor] = useState('');
 
   const navigate = useNavigate();
 
@@ -111,10 +112,7 @@ export default function Post({
         !detailsRef.current.contains(e.target as Node)
       ) {
         setIsOpen(false);
-      } else {
-        setIsOpen(true);
       }
-      
     }
     document.addEventListener("click", handleClickOutside);
     return () => {
@@ -123,9 +121,9 @@ export default function Post({
   }, []);
 
   const URL =
-    process.env.NODE_ENV === "production"
-      ? "https://blogposts.up.railway.app"
-      : "http://localhost:3000";
+  process.env.NODE_ENV === "production"
+  ? import.meta.env.VITE_HOST
+  : "http://localhost:3000";
 
   const detailsRef = useRef<HTMLDetailsElement | null>(null);
   const optionsRef = useRef<HTMLButtonElement | null>(null);
@@ -158,24 +156,75 @@ export default function Post({
     (x) => x === user.username
   );
 
-  function getSourceImage() {
-    if (postState.photoUrl === "blank") {
-      const user = users.find((user) => {
-        const flag = user.posts.some((x) => x.postId === post.postId);
-        if (flag) return user;
-      });
-      const gender = user!.gender;
-      if (gender === "Masculino") return "/male.png";
-      if (gender === "Femenino") return "/female.png";
-    } else {
-      return postState.photoUrl;
+  // GET USER PROFILE
+  useEffect(() => {
+    async function getSourceImage() {
+      try {
+        const request = await fetch(`${URL}/api/user/photo/${postState.postId}`);
+        if (request.ok) {
+          const { photoURL, gender } = await request.json();
+          if (photoURL) {
+            setProfileImage(photoURL);
+            return;
+          }
+          if (gender) {
+            if (gender === "Masculino") {
+              setProfileImage("/male.png");
+              return "/male.png";
+            }
+            if (gender === "Femenino") {
+              setProfileImage("/female.png");
+              return "/female.png";
+            }
+          }
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          console.log(error);
+        }
+      }
     }
-  }
+    getSourceImage();
+  }, [URL, postState.postId]);
 
-  const sourceImage = getSourceImage();
+  // GET USER ID
+  useEffect(() => {
+    async function getUserId() {
+      try {
+        const request = await fetch(`${URL}/api/user/id/${postState.postId}`);
+        if (request.ok) {
+          const { id } = await request.json();
+          setUserID(id);
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          console.log(error);
+        }
+      }
+    }
+    getUserId();
+  }, [URL, postState.postId]);
+
+  // GET USER AUTHOR
+  useEffect(() => {
+    async function getAuthor() {
+      try {
+        const request = await fetch(`${URL}/api/user/author/${postState.postId}`);
+        if (request.ok) {
+          const { author } = await request.json();
+          setAuthor(author);
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          console.log(error);
+        }
+      }
+    }
+    getAuthor();
+  }, [URL, postState.postId]);
 
   const profileStyle = {
-    backgroundImage: `url(${sourceImage})`,
+    backgroundImage: `url(${profileImage})`,
   };
 
   const { thumbsUp, thumbsDown, smile, hooray, unhappy, heart } =
@@ -237,18 +286,13 @@ export default function Post({
           };
         }
 
-        const userPost: User = users.find((user) => {
-          const flag = user.posts.some((x) => x.postId === postState.postId);
-          if (flag) return user;
-        }) as User;
-
         const data = {
           newReactions,
           postId: postState.postId,
         };
 
         const sendNewReactions = await fetch(
-          `${URL}/api/posts/updatereactions/${userPost.id}`,
+          `${URL}/api/posts/updatereactions/${userID}`,
           {
             method: "POST",
             credentials: "include",
@@ -302,13 +346,13 @@ export default function Post({
     }
   }
 
-  const haveOptions = user.username === post.author;
+  const haveOptions = user.username === author;
 
   return (
     <>
     <section className="border border-slate-500 rounded-md w-11/12 sm:w-120 relative polygon">
       <div className="text-xl bg-slate-100 p-2 flex justify-between items-center rounded-t-md border-b border-slate-500">
-        <span className="font-bold">{post.author}</span>
+        <span className="font-bold">{author}</span>
         {
           user.logged && haveOptions ?
           <div className="flex justify-center items-center gap-x-2 relative">
@@ -326,7 +370,7 @@ export default function Post({
               <div className="cursor-pointer flex justify-center items-center gap-x-2 p-1 rounded-md border border-teal-500 bg-teal-200 hover:bg-teal-400">
                 <img src="/pen-to-square-regular.svg" width={20} alt="edit post button" />
                 <button 
-                  onClick={() => navigate(`/edit?userId=${user.id}&postId=${post.postId}`)}
+                  onClick={() => navigate(`/edit?userId=${user.id}&postId=${postState.postId}`)}
                 >Editar</button>
               </div>
               <div className="cursor-pointer flex justify-center items-center gap-x-2 p-1 rounded-md border border-red-500 bg-red-300 hover:bg-red-400">
@@ -351,8 +395,10 @@ export default function Post({
         <div className="flex items-center gap-x-6">
           <details
             className="w-fit relative"
-            open={isOpen ? false : undefined}
+            open={isOpen}
             ref={detailsRef}
+            onToggle={(e) => setIsOpen(e.currentTarget.open)}
+            onClick={(e) => {if (!user.logged) e.preventDefault()}}
           >
             <summary className="list-none">
               <img

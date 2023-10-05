@@ -30,9 +30,9 @@ export default function FormLogin() {
   const navigate = useNavigate();
 
   const URL =
-    process.env.NODE_ENV === "production"
-      ? "https://blogposts.up.railway.app"
-      : "http://localhost:3000";
+  process.env.NODE_ENV === "production"
+  ? import.meta.env.VITE_HOST
+  : "http://localhost:3000";
 
   function handleEmail(e: React.ChangeEvent<HTMLInputElement>) {
     setUserForm({

@@ -3,7 +3,20 @@ import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../app/hook";
 import { type RootState } from "../app/store";
 import { setPosts } from "../features/userSlice";
-import {Editor} from "@tinymce/tinymce-react";
+import ReactQuill, { Quill } from 'react-quill';
+import quillEmoji from "quill-emoji";
+import 'react-quill/dist/quill.snow.css';
+import "quill-emoji/dist/quill-emoji.css";
+
+Quill.register(
+  {
+    "formats/emoji": quillEmoji.EmojiBlot,
+    "modules/emoji-toolbar": quillEmoji.ToolbarEmoji,
+    "modules/emoji-textarea": quillEmoji.TextAreaEmoji,
+    "modules/emoji-shortname": quillEmoji.ShortNameEmoji,
+  },
+  true,
+);
 
 const template = {
   title: "",
@@ -12,9 +25,45 @@ const template = {
 
 export default function CreatePost() {
   const [post, setPost] = useState(template);
-  // const [text, setText] = useState('');
   const [value, setValue] = useState('');
   const [loader, setLoader] = useState(false);
+
+  const formats = ['font', 'header', 'bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block', 'color', 'background', 'list', 'indent', 'align', 'link', 'image', 'clean', 'emoji'];
+  const modules = {
+    toolbar: [
+      ['bold', 'italic', 'underline', 'strike'],
+      ['blockquote', 'code-block'],
+    
+      [{ 'header': 1 }, { 'header': 2 }],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'script': 'sub'}, { 'script': 'super' }],
+      [{ 'indent': '-1'}, { 'indent': '+1' }],
+    
+      [{ 'size': ['small', false, 'large', 'huge'] }],
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+    
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'font': [] }],
+      [{ 'align': [] }],
+    
+      ['clean'],
+    ],
+    "emoji-textarea": true,
+    "emoji-shortname": true,
+  };
+
+  useEffect(() => {
+    const emojiContainer = document.querySelector('#textarea-emoji') as HTMLElement;
+    function handleClickOutside(e: MouseEvent) {
+      if (emojiContainer && !emojiContainer?.contains(e.target as Node)) {
+        emojiContainer.style.display = 'none';
+      }
+    }
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
   
   const navigate = useNavigate();
 
@@ -22,14 +71,8 @@ export default function CreatePost() {
   const dispatch = useAppDispatch();
 
   const URL = process.env.NODE_ENV === "production"
-  ? "https://blogposts.up.railway.app"
+  ? import.meta.env.VITE_HOST
   : "http://localhost:3000";
-
-  /* const URL_FRONT = process.env.NODE_ENV === "production"
-  ? "https://blogposts-frontend.vercel.app"
-  : "http://localhost:5173"; */
-
-  const API_KEY = 'lxcvuftzjvdipm1w9uu9869kf6cajlcegxgd9y5z1b4ppnnx';
 
   useEffect(() => {
     if (!user.isVerified) {
@@ -91,23 +134,7 @@ export default function CreatePost() {
         <label className="opacity-50" htmlFor="post-body">
           Mensaje:
         </label>
-        <Editor
-          apiKey={API_KEY}
-          onEditorChange={(newValue) => {
-            setValue(newValue);
-            setPost({
-              ...post,
-              body: newValue,
-            })
-          }}
-          initialValue=''
-          value={value}
-          init={{
-            plugins: 'anchor autolink charmap codesample emoticons link lists searchreplace table visualblocks wordcount checklist casechange export formatpainter pageembed permanentpen footnotes advtemplate advtable advcode editimage tableofcontents mergetags powerpaste tinymcespellchecker autocorrect a11ychecker typography inlinecss',
-            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | align lineheight | tinycomments | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
-            language: 'es',
-          }}
-        />
+        <ReactQuill theme="snow" value={value} formats={formats} onChange={setValue} modules={modules} />
         <button
           className="border-2 rounded-md w-1/2 m-auto p-1 text-2xl border-white text-white bg-zinc-800 hover:bg-white hover:text-zinc-800 hover:border-zinc-800"
           type="submit"

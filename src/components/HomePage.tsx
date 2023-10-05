@@ -1,5 +1,4 @@
 import { Link, useNavigate } from "react-router-dom";
-// import { useGetUsersQuery } from "../services/getUsers";
 import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../app/hook";
 import { RootState } from "../app/store";
@@ -16,43 +15,26 @@ import {
 } from "../features/userSlice";
 
 export default function HomePage() {
-  const user = useAppSelector((state: RootState) => state.user);
-  const dispatch = useAppDispatch();
-  // const { data: users, error, isLoading } = useGetUsersQuery();
-  const [users, setUsers] = useState([]);
   const [postsOrdered, setPostsOrdered] = useState<Post[]>([]);
   const [loader, setLoader] = useState(false);
+
+  const user = useAppSelector((state: RootState) => state.user);
+  const dispatch = useAppDispatch();
 
   const navigate = useNavigate();
 
   const URL =
-    process.env.NODE_ENV === "production"
-      ? "https://blogposts.up.railway.app"
-      : "http://localhost:3000";
+  process.env.NODE_ENV === "production"
+  ? import.meta.env.VITE_HOST
+  : "http://localhost:3000"
 
   useEffect(() => {
-    const getUsers = async() => {
+    const getPosts = async() => {
       try {
-        const request = await fetch(`${URL}/users`, {
-          method: "POST"
-        });
+        const request = await fetch(`${URL}/posts`);
         if (request.ok) {
-          const data = await request.json();
-          setUsers(data);
-          const posts = data
-          .map((user: User) => user.posts)
-          .flat()
-          .sort((a: Post, b: Post) => {
-            // b.date => 'comentado en 15 Julio, 2023'
-            const index1 = a.date.indexOf('en ') + 3;
-            const post1 = a.date.substring(index1);
-
-            const index2 = b.date.indexOf('en ') + 3;
-            const post2 = b.date.substring(index2);
-
-            return Number(strToDate(post2)) - Number(strToDate(post1));
-          });
-          setPostsOrdered(posts);
+          const { postsOrdered } = await request.json();
+          setPostsOrdered(postsOrdered);
         }
       } catch (error) {
         if (error instanceof Error) {
@@ -61,8 +43,7 @@ export default function HomePage() {
         }
       }
     }
-    
-    getUsers();
+    getPosts();
   }, [URL]);
 
   async function handleLogout() {
@@ -82,7 +63,6 @@ export default function HomePage() {
         dispatch(setPhotoUrl("blank"));
         dispatch(setPosts([]));
         dispatch(setUsername(""));
-        // navigate(0);
       } else {
         setLoader(false);
         console.log("Error al cerrar sesión.");
@@ -108,7 +88,6 @@ export default function HomePage() {
     }
   }
 
-  let posts;
   let content;
   const profile = getProfileImage();
   const profileStyle = {
@@ -156,22 +135,6 @@ export default function HomePage() {
     );
   }
 
-  /* if (isLoading) {
-    posts = <div>Loading...</div>;
-  }
-
-  if (error) {
-    posts = <p>Oh no, un error ah ocurrido</p>;
-  } */
-
-  if (!users) {
-    posts = <p>Users not found</p>;
-  }
-
-  if (users) {
-    posts = <Posts postsOrdered={postsOrdered} users={users} user={user} setPostsOrdered={setPostsOrdered} />;
-  }
-
   return (
     <div className={`relative bg-gray-300`}>
       <section className={`${loader ? 'hidden' : 'block'}`}>
@@ -179,7 +142,7 @@ export default function HomePage() {
         <h1 className="border-b-2 border-blue-700 text-center p-4 text-5xl">
           BlogPosts
         </h1>
-        {posts}
+        <Posts postsOrdered={postsOrdered} user={user} setPostsOrdered={setPostsOrdered} />
       </section>
       <div className={`${loader ? 'block' : 'hidden'} absolute top-0 left-0 w-screen h-screen p-4 bg-gray-200 flex flex-col justify-center items-center`}>
         <h3 className="text-xl font-bold font-mono">Saliendo...</h3>
@@ -187,28 +150,4 @@ export default function HomePage() {
       </div>
     </div>
   );
-}
-
-
-function strToDate(str: string) {
-  const array = str.split(' ');
-  const day: number = parseInt(array[0], 10);
-  const month = array[1].slice(0, array[1].length - 1);
-  const year: number = parseInt(array[2], 10);
-  const months: Months = {
-    Enero: 0,
-    Febrero: 1,
-    Marzo: 2,
-    Abril: 3,
-    Mayo: 4,
-    Junio: 5,
-    Julio: 6,
-    Agosto: 7,
-    Septiembre: 8,
-    Octubre: 9,
-    Noviembre: 10,
-    Diciembre: 11,
-  };
-  const date = new Date(year, months[month as keyof Months], day);
-  return date;
 }
