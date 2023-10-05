@@ -4,6 +4,7 @@ import { RootState } from "../app/store";
 import { setPosts } from "../features/userSlice";
 import { useState, useEffect } from "react";
 import ReactQuill, { Quill } from 'react-quill';
+// @ts-ignore
 import quillEmoji from "quill-emoji";
 import 'react-quill/dist/quill.snow.css';
 import "quill-emoji/dist/quill-emoji.css";
