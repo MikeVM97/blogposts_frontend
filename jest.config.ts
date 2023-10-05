@@ -6,7 +6,21 @@ const config: Config = {
   /* Test environment jest-environment-jsdom cannot be found. Make sure the testEnvironment configuration option points to an existing node module. */
   testEnvironment: 'jsdom',
   transform: {
-    "^.+\\.tsx?$": "ts-jest",
+    "^.+\\.tsx?$": [
+      "ts-jest",
+      {
+        diagnostics: {
+          ignoreCodes: [1343]
+        },
+        astTransformers: {
+          before: [
+            {
+              path: 'ts-jest-mock-import-meta',
+            },
+          ],
+        },
+      },
+    ],
   },
   verbose: true,
   moduleNameMapper: {
