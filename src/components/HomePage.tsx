@@ -14,7 +14,7 @@ import {
   setPosts,
   setGender,
 } from "../features/userSlice";
-import * as jose from "jose";
+import { decodeJwt } from "jose";
 
 export default function HomePage() {
   const [postsOrdered, setPostsOrdered] = useState<Post[]>([]);
@@ -50,7 +50,7 @@ export default function HomePage() {
         dispatch(setUsername(""));
         return;
       }
-      const UserDecoded = jose.decodeJwt(token.value);
+      const UserDecoded = decodeJwt(token.value);
       const expiration = new Date(UserDecoded.exp as number * 1000);
       if (new Date() > expiration) {
         dispatch(setEmail(""));

@@ -5,6 +5,9 @@ const config: Config = {
   /* testEnvironment provided by jest-environment-jsdom, prevents the Error: */
   /* Test environment jest-environment-jsdom cannot be found. Make sure the testEnvironment configuration option points to an existing node module. */
   testEnvironment: 'jsdom',
+  /* transformIgnorePatterns: [
+    "/node_modules/(?!jose).+\\.js$"
+  ], */
   transform: {
     "^.+\\.tsx?$": [
       "ts-jest",
