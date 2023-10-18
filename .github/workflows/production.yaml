@@ -26,28 +26,7 @@ jobs:
           name: dist
           path: dist
 
-  # test:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #       with:
-  #         fetch-depth: 0
-  #     - uses: actions/setup-node@v2
-  #       with:
-  #         cache: 'npm'
-  #         node-version: '19'
-  #     - name: Install dependencies
-  #       run: npm ci
-  #     - uses: actions/download-artifact@v2
-  #       with:
-  #         name: dist
-  #         path: dist
-  #     - name: Test
-  #       run: npm run test
-
   Deploy-Production:
-    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
