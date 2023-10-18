@@ -197,7 +197,13 @@ export default function EditPost() {
         <label className="opacity-50" htmlFor="post-body">
           Mensaje:
         </label>
-        <ReactQuill theme="snow" value={value} formats={formats} onChange={setValue} modules={modules} />
+        <ReactQuill theme="snow" value={value} formats={formats} onChange={(n) => {
+          setPost({
+            ...post,
+            body: n,
+          })
+          setValue(n);
+        }} modules={modules} />
         <button
           className={`border-2 rounded-md w-1/2 m-auto p-1 text-2xl ${!newChanges ? 'border-zinc-500 bg-zinc-300' : 'border-green-500 bg-green-300 hover:bg-green-500'}`}
           type="submit"

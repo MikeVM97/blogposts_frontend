@@ -12,7 +12,9 @@ import {
   setIsVerified,
   setUsername,
   setPosts,
+  setGender,
 } from "../features/userSlice";
+import * as jose from "jose";
 
 export default function HomePage() {
   const [postsOrdered, setPostsOrdered] = useState<Post[]>([]);
@@ -26,15 +28,65 @@ export default function HomePage() {
   const URL =
   process.env.NODE_ENV === "production"
   ? import.meta.env.VITE_HOST
-  : "http://localhost:3000"
+  : "http://localhost:3000";
 
   useEffect(() => {
+    const verifySession = async() => {
+      const cookies = document.cookie.split("; ");
+      const keys = cookies.map((cookie) => {
+        const key = cookie.slice(0, cookie.indexOf('='));
+        const value = cookie.slice(cookie.indexOf('=') + 1);
+        return { key, value }
+      });
+      const token = keys.find((token) => token.key === 'accessToken');
+      if (!token) {
+        dispatch(setEmail(""));
+        dispatch(setId(""));
+        dispatch(setIsVerified(false));
+        dispatch(setLogged(false));
+        dispatch(setPassword(""));
+        dispatch(setPhotoUrl("blank"));
+        dispatch(setPosts([]));
+        dispatch(setUsername(""));
+        return;
+      }
+      const UserDecoded = jose.decodeJwt(token.value);
+      const expiration = new Date(UserDecoded.exp as number * 1000);
+      if (new Date() > expiration) {
+        dispatch(setEmail(""));
+        dispatch(setId(""));
+        dispatch(setIsVerified(false));
+        dispatch(setLogged(false));
+        dispatch(setPassword(""));
+        dispatch(setPhotoUrl("blank"));
+        dispatch(setPosts([]));
+        dispatch(setUsername(""));
+        return;
+      } else {
+        dispatch(setEmail(UserDecoded.email));
+        dispatch(setGender(UserDecoded.gender));
+        dispatch(setId(UserDecoded.id));
+        dispatch(setIsVerified(UserDecoded.isVerified));
+        dispatch(setLogged(true));
+        dispatch(setPhotoUrl(UserDecoded.photoUrl));
+        dispatch(setPosts(UserDecoded.posts));
+        dispatch(setUsername(UserDecoded.username));
+      }
+    }
+    verifySession();
+  }, []);
+
+  useEffect(() => {
+    // const cookies = document.cookie;
+    // console.log(cookies);
     const getPosts = async() => {
       try {
         const request = await fetch(`${URL}/posts`);
         if (request.ok) {
           const { postsOrdered } = await request.json();
           setPostsOrdered(postsOrdered);
+        } else {
+          console.log('Error fetch');
         }
       } catch (error) {
         if (error instanceof Error) {
@@ -65,7 +117,8 @@ export default function HomePage() {
         dispatch(setUsername(""));
       } else {
         setLoader(false);
-        console.log("Error al cerrar sesión.");
+        const { message } = await logoutRequest.json();
+        console.log(message);
       }
     } catch (error) {
       console.log(error);
