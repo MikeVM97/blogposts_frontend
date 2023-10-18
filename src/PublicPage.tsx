@@ -22,6 +22,7 @@ export default function PublicPage() {
 
   return (
     <div dangerouslySetInnerHTML={{__html: html}}>
+      😀
     </div>
   )
 }
