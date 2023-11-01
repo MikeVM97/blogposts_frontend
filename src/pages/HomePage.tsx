@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 
 import { useAppSelector, useAppDispatch } from "store/hook"
-import { RootState } from "store/store"
+import type { RootState } from "store/store"
 import {
 	setId,
 	setEmail,

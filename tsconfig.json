@@ -30,7 +30,7 @@
 			"api/*": ["./src/api/*"],
 			"reducers/*": ["./src/reducers/*"],
 			"constants/*": ["./src/constants/*"],
-			"firebase/*": ["./src/firebase/*"],
+			"services/*": ["./src/services/*"],
 			"store/*": ["./src/store/*"]
 		}
 	},

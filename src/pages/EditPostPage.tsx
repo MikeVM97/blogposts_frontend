@@ -3,7 +3,7 @@ import { useState, useEffect } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 
 import { useAppSelector, useAppDispatch } from "store/hook"
-import { RootState } from "store/store"
+import type { RootState } from "store/store"
 import { setPosts } from "reducers/userSlice"
 
 import ReactQuill, { Quill } from "react-quill"

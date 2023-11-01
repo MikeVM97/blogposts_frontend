@@ -2,11 +2,13 @@ import { useState, useEffect, useRef } from "react"
 
 import { useNavigate } from "react-router-dom"
 
+import type { RootState } from "store/store"
 import { useAppDispatch, useAppSelector } from "store/hook"
-import { RootState } from "store/store"
 import { setUsername, setPhotoUrl } from "reducers/userSlice"
 
-import { uploadImage } from "firebase/uploadImage"
+import { uploadImage } from "services/uploadImage"
+
+import { URL } from "constants/index"
 
 const template = {
 	newUsername: "",
@@ -33,11 +35,6 @@ export default function ProfilePage() {
 	const dispatch = useAppDispatch()
 
 	const navigate = useNavigate()
-
-	const URL =
-		process.env.NODE_ENV === "production"
-			? import.meta.env.VITE_HOST
-			: "http://localhost:3000"
 
 	useEffect(() => {
 		const template = {

@@ -14,7 +14,7 @@ import {
 	setUsername
 } from "reducers/userSlice"
 
-import { URL } from "../constants"
+import { URL } from "constants/index"
 
 const template = {
 	email: "",
