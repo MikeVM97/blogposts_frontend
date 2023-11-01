@@ -6,8 +6,8 @@ import RegisterPage from "pages/RegisterPage"
 import CreatePostPage from "pages/CreatePostPage"
 import EditPostPage from "pages/EditPostPage"
 import ProfilePage from "pages/ProfilePage"
-import { useAppSelector } from "./app/hook"
-import { RootState } from "./app/store"
+import { useAppSelector } from "./store/hook"
+import { RootState } from "./store/store"
 import PublicPage from "./PublicPage"
 
 export default function App() {

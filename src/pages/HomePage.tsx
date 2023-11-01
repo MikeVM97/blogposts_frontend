@@ -1,8 +1,9 @@
-import { Link, useNavigate } from "react-router-dom"
 import { useEffect, useState } from "react"
-import { useAppSelector, useAppDispatch } from "../app/hook"
-import { RootState } from "../app/store"
-import Posts from "components/Posts"
+
+import { Link, useNavigate } from "react-router-dom"
+
+import { useAppSelector, useAppDispatch } from "store/hook"
+import { RootState } from "store/store"
 import {
 	setId,
 	setEmail,
@@ -14,7 +15,11 @@ import {
 	setPosts,
 	setGender
 } from "reducers/userSlice"
+
+import Posts from "components/Posts"
+
 import { decodeJwt } from "jose"
+
 import { URL } from "constants/index"
 
 export default function HomePage() {

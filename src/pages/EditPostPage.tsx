@@ -1,13 +1,17 @@
-import { Link, useLocation, useNavigate } from "react-router-dom"
-import { useAppSelector, useAppDispatch } from "../app/hook"
-import { RootState } from "../app/store"
-import { setPosts } from "reducers/userSlice"
 import { useState, useEffect } from "react"
+
+import { Link, useLocation, useNavigate } from "react-router-dom"
+
+import { useAppSelector, useAppDispatch } from "store/hook"
+import { RootState } from "store/store"
+import { setPosts } from "reducers/userSlice"
+
 import ReactQuill, { Quill } from "react-quill"
 // @ts-ignore
 import quillEmoji from "quill-emoji"
 import "react-quill/dist/quill.snow.css"
 import "quill-emoji/dist/quill-emoji.css"
+
 import { URL } from "constants/index"
 
 Quill.register(
