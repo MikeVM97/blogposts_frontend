@@ -9,7 +9,7 @@ export default function PublicPage() {
       : "http://localhost:3000";
 
   useEffect(() => {
-    fetch(`${URL}/dashboard`)
+    fetch(`${URL}/public`)
     .then((res) => res.text())
     .then((data) => {
       const start = data.indexOf('<body>') + 6;
@@ -21,8 +21,6 @@ export default function PublicPage() {
   }, [URL]);
 
   return (
-    <div dangerouslySetInnerHTML={{__html: html}}>
-      😀
-    </div>
+    <div dangerouslySetInnerHTML={{__html: html}}></div>
   )
 }

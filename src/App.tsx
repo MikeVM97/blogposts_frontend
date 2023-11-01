@@ -1,32 +1,45 @@
-import './App.css';
-import { Routes, Route, Navigate } from "react-router-dom";
-import HomePage from "./components/HomePage";
-import FormLogin from "./components/FormLogin";
-import FormRegister from "./components/FormRegister";
-import CreatePost from './components/CreatePost';
-import Profile from './components/Profile';
-import EditPost from './components/EditPost';
-import UserNotLogged from './components/UserNotLogged';
-import UserIsLogged from './components/UserIsLogged';
-import { useAppSelector } from './app/hook';
-import { RootState } from "./app/store";
-import PublicPage from './PublicPage';
+// import './App.css';
+import { Routes, Route, Navigate } from "react-router-dom"
+import HomePage from "pages/HomePage"
+import LoginPage from "pages/LoginPage"
+import RegisterPage from "pages/RegisterPage"
+import CreatePostPage from "pages/CreatePostPage"
+import EditPostPage from "pages/EditPostPage"
+import ProfilePage from "pages/ProfilePage"
+import { useAppSelector } from "./app/hook"
+import { RootState } from "./app/store"
+import PublicPage from "./PublicPage"
 
 export default function App() {
-  const user = useAppSelector((state: RootState) => state.user);
-  return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/login" Component={!user.logged ? FormLogin : UserIsLogged} />
-      <Route path="/register" Component={!user.logged ? FormRegister : UserIsLogged} />
-      
-      <Route path="/post" Component={user.logged ? CreatePost : UserNotLogged} />
-      <Route path="/profile" Component={user.logged ? Profile : UserNotLogged} />
-      <Route path="/edit" Component={user.logged ? EditPost : UserNotLogged} />
+	const user = useAppSelector((state: RootState) => state.user)
+	return (
+		<Routes>
+			<Route path="/" element={<HomePage />} />
+			<Route
+				path="/login"
+				element={!user.logged ? <LoginPage /> : <Navigate to="/" />}
+			/>
+			<Route
+				path="/register"
+				element={!user.logged ? <RegisterPage /> : <Navigate to="/" />}
+			/>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+			<Route
+				path="/post"
+				element={user.logged ? <CreatePostPage /> : <Navigate to="/" />}
+			/>
+			<Route
+				path="/profile"
+				element={user.logged ? <ProfilePage /> : <Navigate to="/" />}
+			/>
+			<Route
+				path="/edit"
+				element={user.logged ? <EditPostPage /> : <Navigate to="/" />}
+			/>
 
-      <Route path='/public' Component={PublicPage} />
-    </Routes>
-  );
+			<Route path="*" element={<Navigate to="/" replace />} />
+
+			<Route path="/testing-public" Component={PublicPage} />
+		</Routes>
+	)
 }
