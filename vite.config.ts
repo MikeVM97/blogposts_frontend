@@ -16,7 +16,9 @@ export default defineConfig({
 			schemas: fileURLToPath(new URL("./src/schemas/", import.meta.url)),
 			api: fileURLToPath(new URL("./src/api/", import.meta.url)),
 			reducers: fileURLToPath(new URL("./src/reducers/", import.meta.url)),
-			constants: fileURLToPath(new URL("./src/constants/", import.meta.url))
+			constants: fileURLToPath(new URL("./src/constants/", import.meta.url)),
+			firebase: fileURLToPath(new URL("./src/firebase/", import.meta.url)),
+			store: fileURLToPath(new URL("./src/store/", import.meta.url))
 		}
 	}
 })

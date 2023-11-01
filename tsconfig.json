@@ -29,7 +29,9 @@
 			"schemas/*": ["./src/schemas/*"],
 			"api/*": ["./src/api/*"],
 			"reducers/*": ["./src/reducers/*"],
-			"constants/*": ["./src/constants/*"]
+			"constants/*": ["./src/constants/*"],
+			"firebase/*": ["./src/firebase/*"],
+			"store/*": ["./src/store/*"]
 		}
 	},
 	"include": ["src", "types.d.ts"],
